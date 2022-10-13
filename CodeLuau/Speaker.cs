@@ -27,9 +27,7 @@ namespace CodeLuau
             if (someError != null)
                 return new RegisterResponse(someError);
 
-            List<string> preferedEmployers = new List<string>() { "Pluralsight", "Microsoft", "Google" };
-
-            bool speakerAppearsQualified = YearsSperience > 10 || HasBlog || Certifications.Count > 3 || preferedEmployers.Contains(Employer);
+            bool speakerAppearsQualified = AppearsExceptional();
 
             if (speakerAppearsQualified is false)
             {
@@ -129,6 +127,16 @@ namespace CodeLuau
                 return RegisterError.EmailRequired;
 
             return default;
+        }
+
+        private bool AppearsExceptional()
+        {
+            List<string> preferedEmployers = new List<string>() { "Pluralsight", "Microsoft", "Google" };
+
+            return YearsSperience > 10
+                || HasBlog
+                || Certifications.Count > 3
+                || preferedEmployers.Contains(Employer);
         }
     }
 }
