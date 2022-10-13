@@ -27,28 +27,11 @@ namespace CodeLuau
             if (someError != null)
                 return new RegisterResponse(someError);
 
-            bool speakerAppearsQualified = AppearsExceptional();
-
-            if (speakerAppearsQualified is false)
-            {
-                var emailDomains = new List<string>() { "aol.com", "prodigy.com", "compuserve.com" };
-
-                string emailDomain = Email.Split('@').Last();
-
-                speakerAppearsQualified = !emailDomains.Contains(emailDomain)
-                    && !(Browser.Name == WebBrowser.BrowserName.InternetExplorer
-                    && Browser.MajorVersion < 9);
-            }
-
-            if (speakerAppearsQualified is false)
-            {
+            if (AppearsExceptional() is false && HasObviousRedFlags() is true)
                 return new RegisterResponse(RegisterError.SpeakerDoesNotMeetStandards);
-            }
 
             if (Sessions.Count == 0)
-            {
                 return new RegisterResponse(RegisterError.NoSessionsProvided);
-            }
 
             bool approvedSpeaker = false;
 
@@ -137,6 +120,16 @@ namespace CodeLuau
                 || HasBlog
                 || Certifications.Count > 3
                 || preferedEmployers.Contains(Employer);
+        }
+
+        private bool HasObviousRedFlags()
+        {
+            var oldEmailDomains = new List<string>() { "aol.com", "prodigy.com", "compuserve.com" };
+
+            string emailDomain = Email.Split('@').Last();
+
+            return oldEmailDomains.Contains(emailDomain)
+                || (Browser.Name == WebBrowser.BrowserName.InternetExplorer && Browser.MajorVersion < 9);
         }
     }
 }
