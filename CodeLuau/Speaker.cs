@@ -22,117 +22,106 @@ namespace CodeLuau
         {
             int? speakerId = null;
 
-            if (!string.IsNullOrWhiteSpace(FirstName))
+            if (string.IsNullOrWhiteSpace(FirstName))
             {
-                if (!string.IsNullOrWhiteSpace(LastName))
+                return new RegisterResponse(RegisterError.FirstNameRequired);
+            }
+
+            if (string.IsNullOrWhiteSpace(LastName))
+            {
+                return new RegisterResponse(RegisterError.LastNameRequired);
+            }
+            if (string.IsNullOrWhiteSpace(Email))
+            {
+                return new RegisterResponse(RegisterError.EmailRequired);
+            }
+
+            var emps = new List<string>() { "Pluralsight", "Microsoft", "Google" };
+
+            bool good = Exp > 10 || HasBlog || Certifications.Count > 3 || emps.Contains(Employer);
+
+            if (good is false)
+            {
+                var domains = new List<string>() { "aol.com", "prodigy.com", "compuserve.com" };
+
+                string emailDomain = Email.Split('@').Last();
+
+                if (!domains.Contains(emailDomain) && (!(Browser.Name == WebBrowser.BrowserName.InternetExplorer && Browser.MajorVersion < 9)))
                 {
-                    if (!string.IsNullOrWhiteSpace(Email))
+                    good = true;
+                }
+            }
+
+            if (good is false)
+            {
+                return new RegisterResponse(RegisterError.SpeakerDoesNotMeetStandards);
+            }
+
+            if (Sessions.Count == 0)
+            {
+                return new RegisterResponse(RegisterError.NoSessionsProvided);
+            }
+
+            bool appr = false;
+
+            foreach (var session in Sessions)
+            {
+                List<string> ot = new List<string>() { "Cobol", "Punch Cards", "Commodore", "VBScript" };
+
+                foreach (var tech in ot)
+                {
+                    if (session.Title.Contains(tech) || session.Description.Contains(tech))
                     {
-                        var emps = new List<string>() { "Pluralsight", "Microsoft", "Google" };
-
-                        bool good = Exp > 10 || HasBlog || Certifications.Count() > 3 || emps.Contains(Employer);
-
-                        if (!good)
-                        {
-                            var domains = new List<string>() { "aol.com", "prodigy.com", "compuserve.com" };
-
-                            string emailDomain = Email.Split('@').Last();
-
-                            if (!domains.Contains(emailDomain) && (!(Browser.Name == WebBrowser.BrowserName.InternetExplorer && Browser.MajorVersion < 9)))
-                            {
-                                good = true;
-                            }
-                        }
-
-                        if (good)
-                        {
-                            bool appr = false;
-
-                            if (Sessions.Count() != 0)
-                            {
-                                foreach (var session in Sessions)
-                                {
-                                    var ot = new List<string>() { "Cobol", "Punch Cards", "Commodore", "VBScript" };
-
-                                    foreach (var tech in ot)
-                                    {
-                                        if (session.Title.Contains(tech) || session.Description.Contains(tech))
-                                        {
-                                            session.Approved = false;
-                                            break;
-                                        }
-                                        else
-                                        {
-                                            session.Approved = true;
-                                            appr = true;
-                                        }
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                return new RegisterResponse(RegisterError.NoSessionsProvided);
-                            }
-
-                            if (appr)
-                            {
-                                //if we got this far, the speaker is approved
-                                //let's go ahead and register him/her now.
-                                //First, let's calculate the registration fee.
-                                //More experienced speakers pay a lower fee.
-                                if (Exp <= 1)
-                                {
-                                    RegistrationFee = 500;
-                                }
-                                else if (Exp >= 2 && Exp <= 3)
-                                {
-                                    RegistrationFee = 250;
-                                }
-                                else if (Exp >= 4 && Exp <= 5)
-                                {
-                                    RegistrationFee = 100;
-                                }
-                                else if (Exp >= 6 && Exp <= 9)
-                                {
-                                    RegistrationFee = 50;
-                                }
-                                else
-                                {
-                                    RegistrationFee = 0;
-                                }
-
-                                try
-                                {
-                                    speakerId = repository.SaveSpeaker(this);
-                                }
-                                catch (Exception e)
-                                {
-                                    //TODO: in case the db call fails
-                                }
-                            }
-                            else
-                            {
-                                return new RegisterResponse(RegisterError.NoSessionsApproved);
-                            }
-                        }
-                        else
-                        {
-                            return new RegisterResponse(RegisterError.SpeakerDoesNotMeetStandards);
-                        }
+                        session.Approved = false;
+                        break;
                     }
                     else
                     {
-                        return new RegisterResponse(RegisterError.EmailRequired);
+                        session.Approved = true;
+                        appr = true;
                     }
+                }
+            }
+
+            if (appr)
+            {
+                //if we got this far, the speaker is approved
+                //let's go ahead and register him/her now.
+                //First, let's calculate the registration fee.
+                //More experienced speakers pay a lower fee.
+                if (Exp <= 1)
+                {
+                    RegistrationFee = 500;
+                }
+                else if (Exp >= 2 && Exp <= 3)
+                {
+                    RegistrationFee = 250;
+                }
+                else if (Exp >= 4 && Exp <= 5)
+                {
+                    RegistrationFee = 100;
+                }
+                else if (Exp >= 6 && Exp <= 9)
+                {
+                    RegistrationFee = 50;
                 }
                 else
                 {
-                    return new RegisterResponse(RegisterError.LastNameRequired);
+                    RegistrationFee = 0;
+                }
+
+                try
+                {
+                    speakerId = repository.SaveSpeaker(this);
+                }
+                catch (Exception e)
+                {
+                    //TODO: in case the db call fails
                 }
             }
             else
             {
-                return new RegisterResponse(RegisterError.FirstNameRequired);
+                return new RegisterResponse(RegisterError.NoSessionsApproved);
             }
 
             return new RegisterResponse((int)speakerId);
