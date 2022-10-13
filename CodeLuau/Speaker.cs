@@ -21,58 +21,32 @@ namespace CodeLuau
 
         public RegisterResponse Register(IRepository repository)
         {
-            int? speakerId = null;
+            RegisterError? someError = ValidateRegistration();
 
+            if (someError != null)
+            {
+                return new RegisterResponse(someError);
+            }
+
+            CalculateRegistrationFee();
+
+            return new RegisterResponse(repository.SaveSpeaker(this));
+        }
+
+        private RegisterError? ValidateRegistration()
+        {
             RegisterError? someError = ValidateData();
 
             if (someError != null)
-                return new RegisterResponse(someError);
+                return someError;
 
             if (AppearsExceptional() is false && HasObviousRedFlags() is true)
-                return new RegisterResponse(RegisterError.SpeakerDoesNotMeetStandards);
+                return RegisterError.SpeakerDoesNotMeetStandards;
 
             if (ApproveSessions() is false)
-            {
-                return new RegisterResponse(RegisterError.NoSessionsApproved);
-            }
+                return RegisterError.NoSessionsApproved;
 
-            try
-            {
-                CalculateRegistrationFee();
-
-                speakerId = repository.SaveSpeaker(this);
-            }
-            catch (Exception e)
-            {
-                //TODO: in case the db call fails
-            }
-
-            return new RegisterResponse((int)speakerId);
-        }
-
-        private void CalculateRegistrationFee()
-        {
-            // TODO: must go in a database
-            if (YearsSperience <= 1)
-            {
-                RegistrationFee = 500;
-            }
-            else if (YearsSperience >= 2 && YearsSperience <= 3)
-            {
-                RegistrationFee = 250;
-            }
-            else if (YearsSperience >= 4 && YearsSperience <= 5)
-            {
-                RegistrationFee = 100;
-            }
-            else if (YearsSperience >= 6 && YearsSperience <= 9)
-            {
-                RegistrationFee = 50;
-            }
-            else
-            {
-                RegistrationFee = 0;
-            }
+            return default;
         }
 
         private RegisterError? ValidateData()
@@ -122,6 +96,31 @@ namespace CodeLuau
             List<string> oldTechnologies = new List<string>() { "Cobol", "Punch Cards", "Commodore", "VBScript" };
 
             return oldTechnologies.Any(tech => session.Title.Contains(tech) || session.Description.Contains(tech));
+        }
+
+        private void CalculateRegistrationFee()
+        {
+            // TODO: must go in a database
+            if (YearsSperience <= 1)
+            {
+                RegistrationFee = 500;
+            }
+            else if (YearsSperience >= 2 && YearsSperience <= 3)
+            {
+                RegistrationFee = 250;
+            }
+            else if (YearsSperience >= 4 && YearsSperience <= 5)
+            {
+                RegistrationFee = 100;
+            }
+            else if (YearsSperience >= 6 && YearsSperience <= 9)
+            {
+                RegistrationFee = 50;
+            }
+            else
+            {
+                RegistrationFee = 0;
+            }
         }
     }
 }
