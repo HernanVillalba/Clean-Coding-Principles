@@ -2,4 +2,4 @@
 
 Code demo for "Clean Coding Principles in C#" for Pluralsight
 
-![clean-code](https://user-images.githubusercontent.com/63215609/195697289-97ea314c-43db-4f79-bbdc-1a47aab60752.PNG)
+![Capture](https://user-images.githubusercontent.com/63215609/195697624-409c6f57-27f9-4e2f-ab66-f9bdce87a7fa.PNG)
