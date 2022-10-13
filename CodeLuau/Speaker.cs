@@ -31,17 +31,28 @@ namespace CodeLuau
             if (AppearsExceptional() is false && HasObviousRedFlags() is true)
                 return new RegisterResponse(RegisterError.SpeakerDoesNotMeetStandards);
 
-            bool atLeastOneApprovedSession = ApproveSessions();
-
-            if (!atLeastOneApprovedSession)
+            if (ApproveSessions() is false)
             {
                 return new RegisterResponse(RegisterError.NoSessionsApproved);
             }
 
-            //if we got this far, the speaker is approved
-            //let's go ahead and register him/her now.
-            //First, let's calculate the registration fee.
-            //More experienced speakers pay a lower fee.
+            try
+            {
+                CalculateRegistrationFee();
+
+                speakerId = repository.SaveSpeaker(this);
+            }
+            catch (Exception e)
+            {
+                //TODO: in case the db call fails
+            }
+
+            return new RegisterResponse((int)speakerId);
+        }
+
+        private void CalculateRegistrationFee()
+        {
+            // TODO: must go in a database
             if (YearsSperience <= 1)
             {
                 RegistrationFee = 500;
@@ -62,17 +73,6 @@ namespace CodeLuau
             {
                 RegistrationFee = 0;
             }
-
-            try
-            {
-                speakerId = repository.SaveSpeaker(this);
-            }
-            catch (Exception e)
-            {
-                //TODO: in case the db call fails
-            }
-
-            return new RegisterResponse((int)speakerId);
         }
 
         private RegisterError? ValidateData()
