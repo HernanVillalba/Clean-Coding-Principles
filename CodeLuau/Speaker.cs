@@ -4,9 +4,6 @@ using System.Linq;
 
 namespace CodeLuau
 {
-    /// <summary>
-    /// Represents a single speaker
-    /// </summary>
     public class Speaker
     {
         public string FirstName { get; set; }
@@ -21,21 +18,13 @@ namespace CodeLuau
         public int RegistrationFee { get; set; }
         public List<Session> Sessions { get; set; }
 
-        /// <summary>
-        /// Register a speaker
-        /// </summary>
-        /// <returns>speakerID</returns>
         public RegisterResponse Register(IRepository repository)
         {
-            // lets init some vars
             int? speakerId = null;
             bool good = false;
             bool appr = false;
-            //var nt = new List<string> {"Node.js", "Docker"};
             var ot = new List<string>() { "Cobol", "Punch Cards", "Commodore", "VBScript" };
 
-            //DEFECT #5274 DA 12/10/2012
-            //We weren't filtering out the prodigy domain so I added it.
             var domains = new List<string>() { "aol.com", "prodigy.com", "compuserve.com" };
 
             if (!string.IsNullOrWhiteSpace(FirstName))
@@ -44,14 +33,12 @@ namespace CodeLuau
                 {
                     if (!string.IsNullOrWhiteSpace(Email))
                     {
-                        //put list of employers in array
                         var emps = new List<string>() { "Pluralsight", "Microsoft", "Google" };
 
                         good = Exp > 10 || HasBlog || Certifications.Count() > 3 || emps.Contains(Employer);
 
                         if (!good)
                         {
-                            //need to get just the domain from the email
                             string emailDomain = Email.Split('@').Last();
 
                             if (!domains.Contains(emailDomain) && (!(Browser.Name == WebBrowser.BrowserName.InternetExplorer && Browser.MajorVersion < 9)))
@@ -66,15 +53,6 @@ namespace CodeLuau
                             {
                                 foreach (var session in Sessions)
                                 {
-                                    //foreach (var tech in nt)
-                                    //{
-                                    //    if (session.Title.Contains(tech))
-                                    //    {
-                                    //        session.Approved = true;
-                                    //        break;
-                                    //    }
-                                    //}
-
                                     foreach (var tech in ot)
                                     {
                                         if (session.Title.Contains(tech) || session.Description.Contains(tech))
@@ -122,14 +100,13 @@ namespace CodeLuau
                                     RegistrationFee = 0;
                                 }
 
-                                //Now, save the speaker and sessions to the db.
                                 try
                                 {
                                     speakerId = repository.SaveSpeaker(this);
                                 }
                                 catch (Exception e)
                                 {
-                                    //in case the db call fails
+                                    //TODO: in case the db call fails
                                 }
                             }
                             else
@@ -157,7 +134,6 @@ namespace CodeLuau
                 return new RegisterResponse(RegisterError.FirstNameRequired);
             }
 
-            //if we got this far, the speaker is registered.
             return new RegisterResponse((int)speakerId);
         }
     }
