@@ -30,9 +30,6 @@ namespace CodeLuau
             if (AppearsExceptional() is false && HasObviousRedFlags() is true)
                 return new RegisterResponse(RegisterError.SpeakerDoesNotMeetStandards);
 
-            if (Sessions.Count == 0)
-                return new RegisterResponse(RegisterError.NoSessionsProvided);
-
             bool approvedSpeaker = false;
 
             foreach (var session in Sessions)
@@ -108,6 +105,9 @@ namespace CodeLuau
 
             if (string.IsNullOrWhiteSpace(Email))
                 return RegisterError.EmailRequired;
+
+            if (!Sessions.Any())
+                return RegisterError.NoSessionsProvided;
 
             return default;
         }
