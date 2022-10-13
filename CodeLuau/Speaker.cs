@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using static System.Collections.Specialized.BitVector32;
 
 namespace CodeLuau
 {
@@ -30,66 +31,45 @@ namespace CodeLuau
             if (AppearsExceptional() is false && HasObviousRedFlags() is true)
                 return new RegisterResponse(RegisterError.SpeakerDoesNotMeetStandards);
 
-            bool approvedSpeaker = false;
+            bool atLeastOneApprovedSession = ApproveSessions();
 
-            foreach (var session in Sessions)
+            if (!atLeastOneApprovedSession)
             {
-                List<string> ot = new List<string>() { "Cobol", "Punch Cards", "Commodore", "VBScript" };
-
-                foreach (var tech in ot)
-                {
-                    if (session.Title.Contains(tech) || session.Description.Contains(tech))
-                    {
-                        session.Approved = false;
-                        break;
-                    }
-                    else
-                    {
-                        session.Approved = true;
-                        approvedSpeaker = true;
-                    }
-                }
+                return new RegisterResponse(RegisterError.NoSessionsApproved);
             }
 
-            if (approvedSpeaker)
+            //if we got this far, the speaker is approved
+            //let's go ahead and register him/her now.
+            //First, let's calculate the registration fee.
+            //More experienced speakers pay a lower fee.
+            if (YearsSperience <= 1)
             {
-                //if we got this far, the speaker is approved
-                //let's go ahead and register him/her now.
-                //First, let's calculate the registration fee.
-                //More experienced speakers pay a lower fee.
-                if (YearsSperience <= 1)
-                {
-                    RegistrationFee = 500;
-                }
-                else if (YearsSperience >= 2 && YearsSperience <= 3)
-                {
-                    RegistrationFee = 250;
-                }
-                else if (YearsSperience >= 4 && YearsSperience <= 5)
-                {
-                    RegistrationFee = 100;
-                }
-                else if (YearsSperience >= 6 && YearsSperience <= 9)
-                {
-                    RegistrationFee = 50;
-                }
-                else
-                {
-                    RegistrationFee = 0;
-                }
-
-                try
-                {
-                    speakerId = repository.SaveSpeaker(this);
-                }
-                catch (Exception e)
-                {
-                    //TODO: in case the db call fails
-                }
+                RegistrationFee = 500;
+            }
+            else if (YearsSperience >= 2 && YearsSperience <= 3)
+            {
+                RegistrationFee = 250;
+            }
+            else if (YearsSperience >= 4 && YearsSperience <= 5)
+            {
+                RegistrationFee = 100;
+            }
+            else if (YearsSperience >= 6 && YearsSperience <= 9)
+            {
+                RegistrationFee = 50;
             }
             else
             {
-                return new RegisterResponse(RegisterError.NoSessionsApproved);
+                RegistrationFee = 0;
+            }
+
+            try
+            {
+                speakerId = repository.SaveSpeaker(this);
+            }
+            catch (Exception e)
+            {
+                //TODO: in case the db call fails
             }
 
             return new RegisterResponse((int)speakerId);
@@ -130,6 +110,18 @@ namespace CodeLuau
 
             return oldEmailDomains.Contains(emailDomain)
                 || (Browser.Name == WebBrowser.BrowserName.InternetExplorer && Browser.MajorVersion < 9);
+        }
+
+        private bool ApproveSessions()
+        {
+            return Sessions.Any(session => SessionIsAboutOldTechnology(session) is false);
+        }
+
+        private bool SessionIsAboutOldTechnology(Session session)
+        {
+            List<string> oldTechnologies = new List<string>() { "Cobol", "Punch Cards", "Commodore", "VBScript" };
+
+            return oldTechnologies.Any(tech => session.Title.Contains(tech) || session.Description.Contains(tech));
         }
     }
 }

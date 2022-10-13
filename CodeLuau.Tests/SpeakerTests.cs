@@ -102,10 +102,11 @@ namespace CodeLuau.Tests
         public void Register_SingleSessionThatsOnOldTech_ReturnsNoSessionsApproved()
         {
             //arrange
-            var speaker = GetSpeakerThatWouldBeApproved();
-            speaker.Sessions = new List<Session>() {
-            new Session("Cobol for dummies", "Intro to Cobol")
-        };
+            Speaker speaker = GetSpeakerThatWouldBeApproved();
+            speaker.Sessions = new List<Session>()
+            {
+                new Session("Cobol for dummies", "Intro to Cobol")
+            };
 
             //act
             var result = speaker.Register(repository);
