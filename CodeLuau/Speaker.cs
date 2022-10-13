@@ -22,19 +22,10 @@ namespace CodeLuau
         {
             int? speakerId = null;
 
-            if (string.IsNullOrWhiteSpace(FirstName))
-            {
-                return new RegisterResponse(RegisterError.FirstNameRequired);
-            }
+            RegisterError? someError = ValidateData();
 
-            if (string.IsNullOrWhiteSpace(LastName))
-            {
-                return new RegisterResponse(RegisterError.LastNameRequired);
-            }
-            if (string.IsNullOrWhiteSpace(Email))
-            {
-                return new RegisterResponse(RegisterError.EmailRequired);
-            }
+            if (someError != null)
+                return new RegisterResponse(someError);
 
             var emps = new List<string>() { "Pluralsight", "Microsoft", "Google" };
 
@@ -125,6 +116,20 @@ namespace CodeLuau
             }
 
             return new RegisterResponse((int)speakerId);
+        }
+
+        private RegisterError? ValidateData()
+        {
+            if (string.IsNullOrWhiteSpace(FirstName))
+                return RegisterError.FirstNameRequired;
+
+            if (string.IsNullOrWhiteSpace(LastName))
+                return RegisterError.LastNameRequired;
+
+            if (string.IsNullOrWhiteSpace(Email))
+                return RegisterError.EmailRequired;
+
+            return default;
         }
     }
 }
