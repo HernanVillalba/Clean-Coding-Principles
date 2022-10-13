@@ -40,10 +40,10 @@ namespace CodeLuau
             if (someError != null)
                 return someError;
 
-            if (AppearsExceptional() is false && HasObviousRedFlags() is true)
+            if (!AppearsExceptional() && HasObviousRedFlags())
                 return RegisterError.SpeakerDoesNotMeetStandards;
 
-            if (ApproveSessions() is false)
+            if (!ApproveSessions())
                 return RegisterError.NoSessionsApproved;
 
             return default;
@@ -100,27 +100,14 @@ namespace CodeLuau
 
         private void CalculateRegistrationFee()
         {
-            // TODO: must go in a database
-            if (YearsSperience <= 1)
+            RegistrationFee = YearsSperience switch
             {
-                RegistrationFee = 500;
-            }
-            else if (YearsSperience >= 2 && YearsSperience <= 3)
-            {
-                RegistrationFee = 250;
-            }
-            else if (YearsSperience >= 4 && YearsSperience <= 5)
-            {
-                RegistrationFee = 100;
-            }
-            else if (YearsSperience >= 6 && YearsSperience <= 9)
-            {
-                RegistrationFee = 50;
-            }
-            else
-            {
-                RegistrationFee = 0;
-            }
+                int n when n <= 1 => 500,
+                int n when n >= 2 && n <= 3 => 250,
+                int n when n >= 4 && n <= 5 => 100,
+                int n when n >= 6 && n <= 9 => 50,
+                _ => 0,
+            };
         }
     }
 }
